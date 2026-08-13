@@ -13,7 +13,7 @@ st.write("Попуните променљива поља за генерисањ
 
 # --- СТАЛНИ ПОДАЦИ ПРИМАОЦА (Конфигурација) ---
 st.sidebar.header("⚙️ Подешавања примаоца")
-RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="265-1100310095965-50")
+RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="1606000000153491782")
 NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="FIZIOFIT TIM BEOGRAD")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
 
