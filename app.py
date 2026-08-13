@@ -30,7 +30,7 @@ RACUN_PRIMAOCA = OPCIJE_RACUNA[izabrani_racun_naziv]
 # Приказ изабраног броја рачуна у бочној траци (чисто ради провере)
 st.sidebar.info(f"Изабрани број: **{RACUN_PRIMAOCA}**")
 
-NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="ПЕРА ПЕРИЋ Д.О.О. БЕОГРАД")
+NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="Милош Петровић. БЕОГРАД")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
 
 # --- ФОРМА ЗА УНОС ПОДАТАКА ---
