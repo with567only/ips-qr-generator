@@ -2,51 +2,67 @@ import streamlit as st
 import qrcode
 from io import BytesIO
 from PIL import Image
-import smtplib
-from email.message import EmailMessage
 
 # --- ПОДЕШАВАЊА СТРАНИЦЕ ---
 st.set_page_config(page_title="НБС IPS QR Генератор", page_icon="💳", layout="centered")
 
 st.title("💳 НБС IPS QR Генератор плаћања")
-st.write("Попуните променљива поља за генерисање QR кода и слање на е-маил.")
+st.write("Попуните променљива поља за генерисање QR кода.")
 
-# --- СТАЛНИ ПОДАЦИ ПРИМАОЦА (Конфигурација) ---
+# --- СТАЛНИ ПОДАЦИ ПРИМАОЦА (Конфигурација у бочној траци) ---
 st.sidebar.header("⚙️ Подешавања примаоца")
-RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="265110031009596550")
+RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="265-1100310095965-50")
 NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="FIZIOFIT TIM BEOGRAD")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
-
-st.sidebar.markdown("---")
-st.sidebar.header("📧 Параметри за е-маил")
-SMTP_SERVER = st.sidebar.text_input("SMTP Сервер:", value="smtp.gmail.com")
-SMTP_PORT = st.sidebar.number_input("SMTP Порт:", value=465)
-TVOJ_EMAIL = st.sidebar.text_input("Твој е-маил:", value="milos.fiziofit@gmail.com")
-TVOJA_LOZINKA = st.sidebar.text_input("App Лозинка:", type="password", help="За Gmail користите App Password")
 
 # --- ФОРМА ЗА УНОС ПОДАТАКА ---
 col1, col2 = st.columns(2)
 
 with col1:
-    iznos_input = st.text_input("Износ (РСД):", value="1500,00")
+    iznos_input = st.text_input("Износ (РСД):", value="1500")
     svrha_input = st.text_input("Сврха плаћања:", value="Уплата по рачуну 01-2026")
 
 with col2:
     poziv_input = st.text_input("Позив на број (опционо):", value="")
-    email_primaoca = st.text_input("Е-маил купца/уплатиоца:", value="")
 
-# --- ГЕНЕРИСАЊЕ IPS ТЕКСТА ---
-def napravi_ips_string(iznos, svrha, poziv):
-    iznos_clean = iznos.strip().replace('.', ',')
-    # Форматирање по стандарду НБС
-    ips = f"K:PR|V:01|C:1|R:{RACUN_PRIMAOCA}|N:{NAZIV_PRIMAOCA}|I:RSD{iznos_clean}|SF:{SIFRA_PLACANJA}|S:{svrha}"
-    if poziv.strip():
+# --- ФУНКЦИЈА ЗА АУТОМАТСКО ФОРМАТИРАЊЕ И ГЕНЕРИСАЊЕ IPS СТРИНГА ---
+def napravi_ips_string(racun, naziv, iznos, sf, svrha, poziv):
+    # 1. Санирање рачуна (остави само цифре)
+    racun_clean = "".join(filter(str.isdigit, str(racun)))
+    
+    # 2. Аутоматско форматирање износа на 2 децимале са запетом (нпр. 1500 -> 1500,00)
+    raw_iznos = str(iznos).strip().replace(' ', '').replace(',', '.')
+    try:
+        val = float(raw_iznos)
+        iznos_formatted = f"{val:.2f}".replace('.', ',')
+    except ValueError:
+        iznos_formatted = "0,00"
+
+    # 3. Текст по стандарду НБС IPS
+    ips = (
+        f"K:PR"
+        f"|V:01"
+        f"|C:1"
+        f"|R:{racun_clean}"
+        f"|N:{naziv.strip()}"
+        f"|I:RSD{iznos_formatted}"
+        f"|SF:{sf.strip()}"
+        f"|S:{svrha.strip()}"
+    )
+
+    if poziv and poziv.strip():
         ips += f"|RO:{poziv.strip()}"
+
     return ips
 
-ips_tekst = napravi_ips_string(iznos_input, svrha_input, poziv_input)
+# Генерисање IPS стринга
+ips_tekst = napravi_ips_string(RACUN_PRIMAOCA, NAZIV_PRIMAOCA, iznos_input, SIFRA_PLACANJA, svrha_input, poziv_input)
 
 st.markdown("---")
+
+# Приказ генерисаног текста (за контролу)
+with st.expander("🔍 Погледај генерисани IPS текст (за контролу)"):
+    st.code(ips_tekst, language="text")
 
 # --- ГЕНЕРИСАЊЕ И ПРИКАЗ QR КОДА ---
 if st.button("🖼️ ГЕНЕРИШИ QR КОД", type="primary"):
@@ -68,59 +84,10 @@ if st.button("🖼️ ГЕНЕРИШИ QR КОД", type="primary"):
 
     st.image(byte_im, caption="Генерисани НБС IPS QR код", width=250)
     
-    # Опција за директно преузимање слике на компјутер/телефон
+    # Опција за преузимање
     st.download_button(
         label="💾 Преузми QR код (PNG)",
         data=byte_im,
         file_name="NBS_IPS_QR.png",
         mime="image/png"
     )
-
-# --- СЛАЊЕ НА Е-МАИЛ ---
-st.markdown("---")
-st.subheader("✉️ Слање кода на мејл")
-
-if st.button("📧 Пошаљи мејл са кодом"):
-    if not email_primaoca:
-        st.error("Молимо унесите е-маил адресу купца!")
-    else:
-        try:
-            # Генерација слике
-            qr = qrcode.QRCode(
-                version=1,
-                error_correction=qrcode.constants.ERROR_CORRECT_Q,
-                box_size=10,
-                border=3,
-            )
-            qr.add_data(ips_tekst)
-            qr.make(fit=True)
-            img = qr.make_image(fill_color="black", back_color="white")
-            
-            img_buf = BytesIO()
-            img.save(img_buf, format="PNG")
-            img_bytes = img_buf.getvalue()
-
-            # Склапање мејл поруке
-            msg = EmailMessage()
-            msg['Subject'] = f'Подаци за уплату: {svrha_input}'
-            msg['From'] = TVOJ_EMAIL
-            msg['To'] = email_primaoca
-            msg.set_content(
-                f"Поштовани,\n\n"
-                f"У прилогу вам шаљемо QR код за брзу уплату путем ваше мобилне банкарске апликације (IPS сканирај).\n\n"
-                f"Износ: {iznos_input} RSD\n"
-                f"Сврха плаћања: {svrha_input}\n"
-                f"Прималац: {NAZIV_PRIMAOCA}\n\n"
-                f"Хвала!"
-            )
-
-            msg.add_attachment(img_bytes, maintype="image", subtype="png", filename="NBS_IPS_QR.png")
-
-            # Слање преко SMTP
-            with smtplib.SMTP_SSL(SMTP_SERVER, int(SMTP_PORT)) as server:
-                server.login(TVOJ_EMAIL, TVOJA_LOZINKA)
-                server.send_message(msg)
-
-            st.success(f"Мејл је успешно послат на {email_primaoca}!")
-        except Exception as e:
-            st.error(f"Дошло је до грешке при слању мејла: {e}")
