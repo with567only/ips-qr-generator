@@ -13,15 +13,15 @@ st.write("Попуните променљива поља за генерисањ
 
 # --- СТАЛНИ ПОДАЦИ ПРИМАОЦА (Конфигурација) ---
 st.sidebar.header("⚙️ Подешавања примаоца")
-RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="340000001234567812")
-NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="ПЕРА ПЕРИЋ Д.О.О. БЕОГРАД")
+RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="265-1100310095965-50")
+NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="FIZIOFIT TIM BEOGRAD")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
 
 st.sidebar.markdown("---")
 st.sidebar.header("📧 Параметри за е-маил")
 SMTP_SERVER = st.sidebar.text_input("SMTP Сервер:", value="smtp.gmail.com")
 SMTP_PORT = st.sidebar.number_input("SMTP Порт:", value=465)
-TVOJ_EMAIL = st.sidebar.text_input("Твој е-маил:", value="tvoj.email@gmail.com")
+TVOJ_EMAIL = st.sidebar.text_input("Твој е-маил:", value="milos.fiziofit@gmail.com")
 TVOJA_LOZINKA = st.sidebar.text_input("App Лозинка:", type="password", help="За Gmail користите App Password")
 
 # --- ФОРМА ЗА УНОС ПОДАТАКА ---
