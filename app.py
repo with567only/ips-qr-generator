@@ -27,8 +27,9 @@ izabrani_racun_naziv = st.sidebar.selectbox(
 # Преузимање тачног броја рачуна на основу изабране опције
 RACUN_PRIMAOCA = OPCIJE_RACUNA[izabrani_racun_naziv]
 
-# Приказ изабраног броја рачуна у бочној траци (чисто ради провере)
-st.sidebar.info(f"Изабрани број: **{RACUN_PRIMAOCA}**")
+# Приказ изабраног броја рачуна - наслов изнад, број испод у једном реду
+st.sidebar.caption("Број изабраног рачуна:")
+st.sidebar.markdown(f"**`{RACUN_PRIMAOCA}`**")
 
 NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="Милош Петровић. БЕОГРАД")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
