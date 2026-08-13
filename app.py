@@ -9,10 +9,28 @@ st.set_page_config(page_title="НБС IPS QR Генератор", page_icon="�
 st.title("💳 НБС IPS QR Генератор плаћања")
 st.write("Попуните променљива поља за генерисање QR кода.")
 
+# --- ЛИСТА ТЕКУЋИХ РАЧУНА (Прилагоди називе и бројеве рачуна) ---
+OPCIJE_RACUNA = {
+    "Рачун 1 - Банка Интеса": "160-5100103505804-45",
+    "Рачун 2 - Raiffeisen Bank": "265-7315567-41"
+}
+
 # --- СТАЛНИ ПОДАЦИ ПРИМАОЦА (Конфигурација у бочној траци) ---
 st.sidebar.header("⚙️ Подешавања примаоца")
-RACUN_PRIMAOCA = st.sidebar.text_input("Рачун примаоца:", value="265-1100310095965-50")
-NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="FIZIOFIT TIM BEOGRAD")
+
+# Падајућа листа (combobox) за избор рачуна
+izabrani_racun_naziv = st.sidebar.selectbox(
+    "Изаберите текући рачун:",
+    options=list(OPCIJE_RACUNA.keys())
+)
+
+# Преузимање тачног броја рачуна на основу изабране опције
+RACUN_PRIMAOCA = OPCIJE_RACUNA[izabrani_racun_naziv]
+
+# Приказ изабраног броја рачуна у бочној траци (чисто ради провере)
+st.sidebar.info(f"Изабрани број: **{RACUN_PRIMAOCA}**")
+
+NAZIV_PRIMAOCA = st.sidebar.text_input("Назив примаоца:", value="ПЕРА ПЕРИЋ Д.О.О. БЕОГРАД")
 SIFRA_PLACANJA = st.sidebar.text_input("Шифра плаћања:", value="289")
 
 # --- ФОРМА ЗА УНОС ПОДАТАКА ---
@@ -55,7 +73,7 @@ def napravi_ips_string(racun, naziv, iznos, sf, svrha, poziv):
 
     return ips
 
-# Генерисање IPS стринга
+# Генерисање IPS стринга са изабраним рачуном
 ips_tekst = napravi_ips_string(RACUN_PRIMAOCA, NAZIV_PRIMAOCA, iznos_input, SIFRA_PLACANJA, svrha_input, poziv_input)
 
 st.markdown("---")
@@ -82,7 +100,7 @@ if st.button("🖼️ ГЕНЕРИШИ QR КОД", type="primary"):
     img.save(buf, format="PNG")
     byte_im = buf.getvalue()
 
-    st.image(byte_im, caption="Генерисани НБС IPS QR код", width=250)
+    st.image(byte_im, caption=f"НБС IPS QR код за: {izabrani_racun_naziv}", width=250)
     
     # Опција за преузимање
     st.download_button(
